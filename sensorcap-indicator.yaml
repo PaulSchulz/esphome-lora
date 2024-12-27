@@ -11,3 +11,17 @@ esp32:
 # Enable logging
 logger:
 
+#############################################################################    
+external_components:
+  - source: local
+    path: "components/lora_radio"
+
+lora_radio:
+  nss_pin: IC0_0
+  reset_pin: IC0_1
+  busy_pin: IC0_2
+  dio_1_pin: IC0_3
+  spi:
+    clk_pin: GPIO41
+    miso_pin: GPIO47
+    mosi_pin: GPIO48
