@@ -4,11 +4,24 @@ A Component for ESPHome for LoRa Radio Communications
 
 * Introduction :TOC:
 - [[#supported-hardware][Supported Hardware]]
+  - [[#heltec-v3-sx1262x][Heltec v3 (SX1262x)]]
+  - [[#seeed-studio-sensorcap-indicator-sx126x][Seeed Studio SensorCAP Indicator (SX126x)]]
 - [[#installation][Installation]]
+- [[#testing][Testing]]
 - [[#examples][Examples]]
+  - [[#transmitter][Transmitter]]
+  - [[#receiver][Receiver]]
+  - [[#ping-pong][Ping Pong]]
 
 * Supported Hardware
-  
+** Heltec v3 (SX1262x)                                                     :WIP:
+** Seeed Studio SensorCAP Indicator (SX126x)                               :WIP:
+
 * Installation
 
+* Testing
+
 * Examples
+** Transmitter
+** Receiver
+** Ping Pong
