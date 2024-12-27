@@ -1,0 +1,17 @@
+external_components:
+  - source: local
+    path: "./custom_components/lora_radio"
+
+lora_radio:
+  nss_pin: pin_lora_nss
+  reset_pin: pin_lora_reset
+  busy_pin: pin_lora_busy
+  dio_1_pin: pin_lora_dio_1
+  spi:
+    clk_pin: GPIO41
+    miso_pin: GPIO47
+    mosi_pin: GPIO48
+
+pca9554:
+  - id: pca9535
+    address: 0x20
