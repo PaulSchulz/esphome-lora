@@ -1,27 +1,79 @@
 esphome:
   name: "sensorcap-indicator"
+  libraries:
+    - "SPI"
+    - "Ticker"
+#    - "SX126x-Arduino"
+    - RadioLib=https://github.com/jgromes/RadioLib#5.6.0
 
 esp32:
-  board: esp32-s3-devkitc-1
+  board: esp32-s3-devkitc-1 
   variant: esp32s3
   framework:
+#    type: esp-idf
     type: arduino
-
+    
 #############################################################################    
 # Enable logging
 logger:
-
+  level: DEBUG
+  
 #############################################################################    
 external_components:
-  - source: local
-    path: "components/lora_radio"
+  - source:
+      type: local
+      path: components
+    components: [lora_radio]
 
 lora_radio:
-  nss_pin: IC0_0
-  reset_pin: IC0_1
-  busy_pin: IC0_2
-  dio_1_pin: IC0_3
-  spi:
-    clk_pin: GPIO41
-    miso_pin: GPIO47
-    mosi_pin: GPIO48
+    debug: true
+
+# PCA9535 for SenseCAP
+i2c:
+  id:  bus_a
+  sda: GPIO39
+  scl: GPIO40
+  scan: true
+
+pca9554:
+  - id: pca9535_device
+    address: 0x20
+    pin_count: 16  # 16 pins on PCA9535
+    
+switch:
+  - platform: gpio
+    name: LoRa_NSS
+    id: lora_nss
+    pin:
+      pca9554: pca9535_device
+      number: 0
+      mode:
+        output: true
+
+  - platform: gpio
+    name: LoRa_Reset
+    id: lora_reset
+    pin:
+      pca9554: pca9535_device
+      number: 1
+      mode:
+        output: true
+
+  - platform: gpio
+    name: LoRa_Busy
+    id: lora_busy
+    pin:
+      pca9554: pca9535_device
+      number: 2
+      mode:
+        input: true
+
+  - platform: gpio
+    name: LoRa_DIO1
+    id: lora_dio1
+    pin:
+      pca9554: pca9535_device
+      number: 3
+      mode:
+        input: true
+
