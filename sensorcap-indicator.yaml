@@ -78,10 +78,6 @@ switch:
       mode:
         input: true
 
-#lora_radio:
-#  id: lora_radio1
-# pin: GPIO10
+lora_radio:
+  id: lora_radio_1
 
-empty_i2c_component:
-  id: empty_i2c_component_1
-  address: 0x20

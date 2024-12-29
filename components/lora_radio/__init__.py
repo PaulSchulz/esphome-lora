@@ -5,13 +5,13 @@ from esphome.const import CONF_ID
 
 DEPENDENCIES = ["i2c"]
 
-empty_i2c_component_ns = cg.esphome_ns.namespace("empty_i2c_component")
-EmptyI2CComponent = empty_i2c_component_ns.class_(
-    "EmptyI2CComponent", cg.Component, i2c.I2CDevice
+lora_radio_ns = cg.esphome_ns.namespace("lora_radio")
+LoRaRadio = lora_radio_ns.class_(
+    "LoRaRadio", cg.Component, i2c.I2CDevice
 )
 
 CONFIG_SCHEMA = (
-    cv.Schema({cv.GenerateID(): cv.declare_id(EmptyI2CComponent)})
+    cv.Schema({cv.GenerateID(): cv.declare_id(LoRaRadio)})
     .extend(cv.COMPONENT_SCHEMA)
     .extend(i2c.i2c_device_schema(0x01))
 )
