@@ -82,4 +82,6 @@ switch:
 #  id: lora_radio1
 # pin: GPIO10
 
-empty_component:
+empty_i2c_component:
+  id: empty_i2c_component_1
+  address: 0x20
