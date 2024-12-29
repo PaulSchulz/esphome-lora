@@ -1,29 +1,21 @@
-#pragma once
+// lora_radio.h
+
 #include "esphome.h"
-#include "RadioLib.h"
 
-#include "lora_radio.h"
-#include "esphome/core/log.h"
+class LoRaRadio : public Component {
+public:
+    void set_pin(InternalGPIOPin *pin) { pin_ = pin; }
 
-namespace esphome {
-namespace lora_radio {
+    void setup() override {
+        ESP_LOGCONFIG("LoRaRadio", "Setting up LoRaRadio...");
+        // Initialize the pin
+        pin_->setup();
+    }
 
-    class LoraRadio : public Component {
-    public:
-        // Constructor
-        LoraRadio();
+    void loop() override {
+        // Main loop code here
+    }
 
-        void setup() override;
-        void loop() override;
-
-    private:
-        std::string board_type_;
-        Module lora_module_;
-        SX1262 lora_;
-
-    // Pin configurations for both boards
-    //int nss_pin_, reset_pin_, busy_pin_, dio_1_pin_;
+private:
+    InternalGPIOPin *pin_;
 };
-
-}  // namespace lora_radio
-}  // namespace esphome

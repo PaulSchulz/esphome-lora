@@ -16,17 +16,18 @@ esp32:
 #############################################################################    
 # Enable logging
 logger:
+  hardware_uart: UART0
   level: DEBUG
-  
+
 #############################################################################    
 external_components:
   - source:
       type: local
       path: components
-    components: [lora_radio]
+#    components: [lora_radio]
 
-lora_radio:
-    debug: true
+#lora_radio:
+#  debug: true
 
 # PCA9535 for SenseCAP
 i2c:
@@ -77,3 +78,8 @@ switch:
       mode:
         input: true
 
+#lora_radio:
+#  id: lora_radio1
+# pin: GPIO10
+
+empty_component:
