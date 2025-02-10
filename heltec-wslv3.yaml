@@ -1,5 +1,9 @@
 esphome:
   name: "heltec-wl32v3"
+  libraries:
+    - "SPI"
+    - "Ticker"
+    - RadioLib=https://github.com/jgromes/RadioLib#5.6.0
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -11,4 +15,22 @@ esp32:
 # Enable logging
 logger:
   hardware_uart: UART0
+  level: DEBUG
+
+#############################################################################
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [lora_radio]
+
+spi:
+  clk_pin: GPIO9
+  mosi_pin: GPIO10
+  miso_pin: GPIO11
+  
+lora_radio:
+  id: lora_radio_device
+  cs_pin: GPIO8
+
 
