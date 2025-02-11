@@ -26,7 +26,8 @@ external_components:
       path: components
 #    components: [lora_radio]
 
-#lora_radio:
+lora_radio:
+  id: lora_radio_device
 #  debug: true
 
 # PCA9535 for SenseCAP
@@ -77,7 +78,4 @@ switch:
       number: 3
       mode:
         input: true
-
-lora_radio:
-  id: lora_radio_1
 
