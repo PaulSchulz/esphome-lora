@@ -4,6 +4,21 @@
 // #include "SPI.h"
 #include "RadioLib.h"
 
+// #include <base64.h>
+
+#define MAX_LORA_PAYLOAD_LEN     255 // max length of 255 per Semtech's datasheets on SX12xx
+#define MESHTASTIC_HEADER_LENGTH  16
+#define MESHTASTIC_PKC_OVERHEAD   12
+
+#define PACKET_FLAGS_HOP_LIMIT_MASK  0x07
+#define PACKET_FLAGS_WANT_ACK_MASK   0x08
+#define PACKET_FLAGS_VIA_MQTT_MASK   0x10
+#define PACKET_FLAGS_HOP_START_MASK  0xE0
+#define PACKET_FLAGS_HOP_START_SHIFT    5
+
+#define NODENUM_BROADCAST UINT32_MAX
+#define NODENUM_BROADCAST_NO_LORA 1
+
 // Hardware
 // Heltec Wifi LoRa 32 (V3) - SX126x pin configuration
 #define PIN_LORA_RESET 12  // LORA RESET
@@ -15,9 +30,6 @@
 #define PIN_LORA_MOSI  10  // LORA SPI MOSI
 #define RADIO_TXEN     -1  // LORA ANTENNA TX ENABLE
 #define RADIO_RXEN     -1  // LORA ANTENNA RX ENABLE
-
-
-#define MAX_LORA_PAYLOAD_LEN 256
 
 // Protobuf definitions
 #define pb_size_t uint32_t
@@ -470,7 +482,8 @@ namespace esphome {
     }
 
         void LoRaRadio::loop() {
-            meshtastic_MeshPacket *mp;
+            RadioBuffer radioBuffer __attribute__((__aligned__));
+            meshtastic_MeshPacket mp;
 
             if (operationDone == true) {
                 int state;
@@ -483,10 +496,61 @@ namespace esphome {
                 // state = radio.readData(mp);
                 // printPacket("PKT", mp);
 
-                byte byteArr[256];
+                // byte byteArr[256];
                 int numBytes = radio.getPacketLength();
-                state = radio.readData(byteArr, numBytes);
-                ESP_LOGI(TAG,"Size: %d", numBytes);
+                state = radio.readData((uint8_t *)&radioBuffer, numBytes);
+                ESP_LOGI(TAG, "Size: %d", numBytes);
+
+                mp.from    = radioBuffer.header.from;
+                mp.to      = radioBuffer.header.to;
+                mp.id      = radioBuffer.header.id;
+                mp.channel = radioBuffer.header.channel;
+                mp.hop_limit =  radioBuffer.header.flags & PACKET_FLAGS_HOP_LIMIT_MASK;
+                mp.hop_start = (radioBuffer.header.flags & PACKET_FLAGS_HOP_START_MASK)
+                               >> PACKET_FLAGS_HOP_START_SHIFT;
+                mp.want_ack = !!(radioBuffer.header.flags & PACKET_FLAGS_WANT_ACK_MASK);
+                mp.via_mqtt = !!(radioBuffer.header.flags & PACKET_FLAGS_VIA_MQTT_MASK);
+
+                ESP_LOGD(TAG, "size=%d",      numBytes);
+                ESP_LOGD(TAG, "from=%#x",     mp.from);
+                ESP_LOGD(TAG, "to=%#x",       mp.to);
+                ESP_LOGD(TAG, "id=%#x",       mp.id);
+                ESP_LOGD(TAG, "channel=%#x",  mp.channel);
+                ESP_LOGD(TAG, "hop_limit=%d", mp.hop_limit);
+                ESP_LOGD(TAG, "hop_start=%d", mp.hop_start);
+                ESP_LOGD(TAG, "want_ack=%d",  mp.want_ack);
+                ESP_LOGD(TAG, "via_mqtt=%d",  mp.via_mqtt);
+
+
+                // pki_key="AQ==";
+                uint8_t key[32] = {
+                    0x38, 0x4b, 0xbc, 0xc0, 0x1d, 0xc0, 0x22, 0xd1,
+                    0x81, 0xbf, 0x36, 0xb8, 0x61, 0x21, 0xe1, 0xfb,
+                    0x96, 0xb7, 0x2e, 0x55, 0xbf, 0x74, 0x22, 0x7e,
+                    0x9d, 0x6a, 0xfb, 0x48, 0xd6, 0x4c, 0xb1, 0xa1
+                };
+
+                // uint8_t other_public_key[32] = 0x00;
+                // uint8_t my_public_key[32] 0x00;
+
+                // Calculate the length of the encoded Base64 string
+                // int encodedLength = base64_enc_len(sizeof(key));
+                // char encoded[encodedLength];
+
+                std::string encoded;
+                // Encode the key
+                // base64_encode(encoded, key, sizeof(key));
+                encoded = base64_encode(key, sizeof(key));
+
+                // Try an decrypt
+                if (mp.channel == 0
+                    && mp.to == 0xfa80683c
+                        // && nodeDB->getMeshNode(p->from) != nullptr
+                        // && nodeDB->getMeshNode(p->from)->user.public_key.size > 0
+                        // && nodeDB->getMeshNode(p->to)->user.public_key.size > 0 &&
+                    )
+                    ESP_LOGD(TAG, "*** Packet to me! ***");
+
                 // printPacket("PKT", (meshtastic_MeshPacket)byteArr);
 
                 ESP_LOGI(TAG,"Starting to listen (again) ...");
