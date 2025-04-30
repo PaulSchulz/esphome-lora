@@ -17,6 +17,17 @@ namespace esphome {
             void loop() override;
             void dump_config() override;
 
+            void set_control_pins(//uint32_t cs,
+                                  uint32_t reset,
+                                  uint32_t dio1,
+                                  uint32_t busy);
+
+        protected:
+            int reset_pin_;
+            int dio1_pin_;
+            int busy_pin_;
+            SX1262 *radio_;
+
         private:
             // Module lora_module_;
             // SX1262 lora_;

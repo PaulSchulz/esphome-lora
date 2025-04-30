@@ -52,11 +52,10 @@ namespace esphome {
         // flag to indicate that a packet was sent or received
         volatile bool operationDone = false;
 
-        SX1262 radio = new Module(PIN_LORA_NSS,
-                                  PIN_LORA_DIO_1,
-                                  PIN_LORA_RESET,
-                                  PIN_LORA_BUSY);
-
+        // SX1262 radio = new Module(PIN_LORA_NSS,
+        //                           PIN_LORA_DIO_1,
+        //                            PIN_LORA_RESET,
+        //                             PIN_LORA_BUSY);
 
         //////////////////////////////////////////////////////////////////////
         // Data structures from RadioLibInterface
@@ -394,6 +393,13 @@ namespace esphome {
         }
 
         //////////////////////////////////////////////////////////////////////
+        void LoRaRadio::set_control_pins(uint32_t reset, uint32_t dio1, uint32_t busy) {
+            // this->cs_pin_    = cs;
+            this->reset_pin_ = reset;
+            this->dio1_pin_  = dio1;
+            this->busy_pin_  = busy;
+        }
+
         void LoRaRadio::setup() {
             ESP_LOGI(TAG, "Setting up LoRaRadio...");
 
@@ -410,7 +416,12 @@ namespace esphome {
             //    ESP_LOGI("LoRa", "LoRa initialized successfully!");
             // }
 
-            // int state = radio.begin();
+            // Initialize RadioLib with SPI device pins
+            // auto module = new Module(this->cs_->get_pin(), dio1_pin_, reset_pin_, busy_pin_);
+            auto module = new Module(PIN_LORA_NSS, dio1_pin_, reset_pin_, busy_pin_);
+            this->radio_ = new SX1262(module);
+
+            // int state = this->radio_->.begin();
             // carrier frequency:           915.0 MHz
             // bandwidth:                   500.0 kHz
             // spreading factor:            6
@@ -429,7 +440,7 @@ namespace esphome {
             float frequency_offset =   0.0;
 
             uint32_t numChannels
-            = floor((freqEnd - freqStart) / (spacing + (bw / 1000.0)));
+                = floor((freqEnd - freqStart) / (spacing + (bw / 1000.0)));
             const char *channelName = "LongFast"; // Default
             uint32_t    channel_num = hash(channelName) % numChannels;
 
@@ -465,20 +476,27 @@ namespace esphome {
             ESP_LOGI(TAG, "Radio: Slot time: %u msec", slotTimeMsec);
 
             // Long Fast (Meshtastic)
-            int state = radio.begin(freq,
-                                    bw,
-                                    sf,
-                                    cr,
-                                    syncWord,
-                                    tx_power,
-                                    preambleLength);
+            int state = this->radio_->begin(freq,
+                                          bw,
+                                          sf,
+                                          cr,
+                                          syncWord,
+                                          tx_power,
+                                          preambleLength);
+
+
+            if (state != RADIOLIB_ERR_NONE) {
+                ESP_LOGE("lora_radio", "Failed to start SX1262: error %d", state);
+            } else {
+                ESP_LOGI("lora_radio", "SX1262 started OK");
+            }
 
             // Set the function that will be called
             // when new packet is received
-            radio.setDio1Action(setFlag);
+            this->radio_->setDio1Action(setFlag);
 
             ESP_LOGI(TAG,"Starting to listen ...");
-            state = radio.startReceive();
+            state = this->radio_->startReceive();
         }
 
         void LoRaRadio::loop() {
@@ -497,8 +515,8 @@ namespace esphome {
                 // printPacket("PKT", mp);
 
                 // byte byteArr[256];
-                int numBytes = radio.getPacketLength();
-                state = radio.readData((uint8_t *)&radioBuffer, numBytes);
+                int numBytes = this->radio_->getPacketLength();
+                state = this->radio_->readData((uint8_t *)&radioBuffer, numBytes);
                 ESP_LOGI(TAG, "Size: %d", numBytes);
 
                 mp.from    = radioBuffer.header.from;
@@ -554,7 +572,7 @@ namespace esphome {
                 // printPacket("PKT", (meshtastic_MeshPacket)byteArr);
 
                 ESP_LOGI(TAG,"Starting to listen (again) ...");
-                state = radio.startReceive();
+                state = this->radio_->startReceive();
             }
     }
 

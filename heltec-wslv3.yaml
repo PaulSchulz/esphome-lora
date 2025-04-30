@@ -31,9 +31,11 @@ spi:
   clk_pin: GPIO9
   mosi_pin: GPIO10
   miso_pin: GPIO11
-  
+
+# SPI Device
 lora_radio:
   id: lora_radio_device
-  cs_pin: GPIO8
-
-
+  cs_pin: 8 #GPIO8
+  reset_pin: 12 #GPIO12
+  dio1_pin: 14 #GPIO14
+  busy_pin: 13 #GPIO13
