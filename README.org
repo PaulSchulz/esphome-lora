@@ -8,6 +8,8 @@ A Component for ESPHome for LoRa Radio Communications
   - [[#seeed-studio-sensorcap-indicator-sx126x][Seeed Studio SensorCAP Indicator (SX126x)]]
 - [[#installation][Installation]]
 - [[#testing][Testing]]
+- [[#issues][Issues]]
+  - [[#radiolib][RadioLib]]
 - [[#examples][Examples]]
   - [[#transmitter][Transmitter]]
   - [[#receiver][Receiver]]
@@ -20,6 +22,26 @@ A Component for ESPHome for LoRa Radio Communications
 * Installation
 
 * Testing
+
+* Issues
+** RadioLib
+This ESPHome component use the RadioLib library. This library supported a large
+number of radio modules which should allow this components to also work with a
+large number of modules without large amounts of additional customisation.
+
+One issue with the current RadioLib githib release is that it doesn't compile
+with esphome because of a configuration option in 'library.json' (using
+'build+'), and it is unsure whether this is an issue with RadioLib, ESPHome, or
+PlatformIO
+
+The fix, is to remove this option.
+
+- Original: https://github.com/jgromes/RadioLib
+- Modified: https://github.com/PaulSchulz/RadioLib
+
+The issue first occurred with the change of RadioLib v5.6.0 to v5.7.0, when the
+'library.json' file was introduced. The issue is still present in the current
+version v7.1.2.
 
 * Examples
 ** Transmitter
