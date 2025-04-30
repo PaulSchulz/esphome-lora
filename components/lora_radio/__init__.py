@@ -36,3 +36,9 @@ async def to_code(config):
 #    repository="https://github.com/jgromes/RadioLib.git",
 #    version="5.3.0"  # Specify the version you want; omit for latest
 #)
+
+#cg.add_library(
+#    name="RadioLib",
+#    repository="https://github.com/PaulSchulz/RadioLib",
+#    version=""  # Specify the version you want; omit for latest
+#)
