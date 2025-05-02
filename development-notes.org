@@ -1,0 +1,61 @@
+* Development Notes
+** Introduction
+This document and notes are my place to document details of this project,
+suggestions, thoughts, plans and progress.
+
+Comments are most welcome.
+
+** YAML Format
+The following is the proposed YAML configuration.
+
+#+begin_src yaml
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [lora_radio]
+
+spi:
+  clk_pin: GPIO9
+  mosi_pin: GPIO10
+  miso_pin: GPIO11
+
+# SPI Device
+lora_radio:
+  id: lora_radio_device
+  cs_pin: 8 #GPIO8
+  reset_pin: 12 #GPIO12
+  dio1_pin: 14 #GPIO14
+  busy_pin: 13 #GPIO13
+  framework:
+    type: meshtastic
+    region: anz
+
+#+end_src
+
+If possible, there should be a away of specifying sensible defaults for the
+default use case.
+
+An example is that the above does not specify a frequency slot or channel name
+for the meshtastic, but the default settings would be:
+
+#+begin_src yaml  
+    lora_radio:
+      ...
+      framework:
+        type: meshtastic
+        region: anz
+
+        max_payload: 255  # max length of 255 per Semtech's datasheets on SX12xx
+        header_length: 16 # MESHTASTIC_HEADER_LENGTH  16
+        pkc_overhead:  12 # MESHTASTIC_PKC_OVERHEAD   12
+        packet_flags_hop_limit_mask: 0x07  # PACKET_FLAGS_HOP_LIMIT_MASK  0x07
+        packet_flags_want_ack_mask:  0x08  # PACKET_FLAGS_WANT_ACK_MASK   0x08
+        packet_flags_via_mqtt_mask:  0x10  # PACKET_FLAGS_VIA_MQTT_MASK   0x10
+        packet_flags_hop_start_mask: 0xE0  # FLAGS_HOP_START_MASK  0xE0
+  #define PACKET_FLAGS_HOP_START_SHIFT    5
+
+  #define NODENUM_BROADCAST UINT32_MAX
+  #define NODENUM_BROADCAST_NO_LORA 1
+
+#+end_src
