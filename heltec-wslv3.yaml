@@ -39,3 +39,7 @@ lora_radio:
   reset_pin: 12 #GPIO12
   dio1_pin: 14 #GPIO14
   busy_pin: 13 #GPIO13
+  #framework:
+  #  type: meshtastic
+  #  region: anz
+    
