@@ -1,9 +1,7 @@
 * Development Notes
 ** Introduction
-This document and notes are my place to document details of this project,
-suggestions, thoughts, plans and progress.
-
-Comments are most welcome.
+This document contains notes and details on the software and it's architecture.
+Suggestions, thoughts and comments are most welcome.
 
 ** YAML Format
 The following is the proposed YAML configuration.
@@ -16,28 +14,24 @@ external_components:
     components: [lora_radio]
 
 spi:
-  clk_pin: GPIO9
+  clk_pin:  GPIO9
   mosi_pin: GPIO10
   miso_pin: GPIO11
 
 # SPI Device
 lora_radio:
   id: lora_radio_device
-  cs_pin: 8 #GPIO8
+  cs_pin:     8 #GPIO8
   reset_pin: 12 #GPIO12
-  dio1_pin: 14 #GPIO14
-  busy_pin: 13 #GPIO13
-  framework:
-    type: meshtastic
-    region: anz
-
+  dio1_pin:  14 #GPIO14
+  busy_pin:  13 #GPIO13
 #+end_src
 
 If possible, there should be a away of specifying sensible defaults for the
 default use case.
 
-An example is that the above does not specify a frequency slot or channel name
-for the meshtastic, but the default settings would be:
+An example is where a frequency slot or channel name
+for meshtastic is not given, but there are sensible  default settings (by design).
 
 #+begin_src yaml  
     lora_radio:
@@ -46,9 +40,9 @@ for the meshtastic, but the default settings would be:
         type: meshtastic
         region: anz
 
-        max_payload: 255  # max length of 255 per Semtech's datasheets on SX12xx
-        header_length: 16 # MESHTASTIC_HEADER_LENGTH  16
-        pkc_overhead:  12 # MESHTASTIC_PKC_OVERHEAD   12
+        max_payload:   255 # max length of 255 per Semtech's datasheets on SX12xx
+        header_length:  16 # MESHTASTIC_HEADER_LENGTH  16
+        pkc_overhead:   12 # MESHTASTIC_PKC_OVERHEAD   12
         packet_flags_hop_limit_mask: 0x07  # PACKET_FLAGS_HOP_LIMIT_MASK  0x07
         packet_flags_want_ack_mask:  0x08  # PACKET_FLAGS_WANT_ACK_MASK   0x08
         packet_flags_via_mqtt_mask:  0x10  # PACKET_FLAGS_VIA_MQTT_MASK   0x10
@@ -59,3 +53,17 @@ for the meshtastic, but the default settings would be:
   #define NODENUM_BROADCAST_NO_LORA 1
 
 #+end_src
+
+** Radio Messaging
+Both Meshtastic and ESPHome use Google's Protobuf system for defining and
+creating data packet. Protobuf needs to be understood and included in this project.
+
+It would be good to be able to support different messaging types (including
+'custom') for transmission over the LoRa radio. eg.
+
+- LoRaWAN (The Things Network) :: https://www.thethingsnetwork.org
+- Meshtastic :: https://meshtastic.org
+- Reticulum/Rnode :: https://reticulum.network
+- MeshCore :: https://meshcore.co.uk
+
+None of these are implemented yet.

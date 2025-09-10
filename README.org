@@ -1,6 +1,6 @@
 #+TITLE:esphome-lora
 
-A Component for ESPHome for LoRa Radio Communications
+A Component for ESPHome to implement LoRa Radio Communications
 
 * Introduction :TOC:
 - [[#supported-hardware][Supported Hardware]]
@@ -8,6 +8,7 @@ A Component for ESPHome for LoRa Radio Communications
   - [[#seeed-studio-sensorcap-indicator-sx126x][Seeed Studio SensorCAP Indicator (SX126x)]]
 - [[#installation][Installation]]
 - [[#testing][Testing]]
+- [[#development][Development]]
 - [[#issues][Issues]]
   - [[#radiolib][RadioLib]]
 - [[#examples][Examples]]
@@ -22,6 +23,9 @@ A Component for ESPHome for LoRa Radio Communications
 * Installation
 
 * Testing
+
+* Development
+See: [[file:development-notes.org][Development Notes]]
 
 * Issues
 ** RadioLib
