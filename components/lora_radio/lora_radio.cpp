@@ -1,6 +1,12 @@
 #include "esphome/core/log.h"
 #include "lora_radio.h"
 
+#include <mbedtls/sha256.h>
+#include <mbedtls/aes.h>
+#include <string>
+#include <vector>
+#include <cstring>
+
 // #include "SPI.h"
 #include "RadioLib.h"
 
@@ -324,6 +330,67 @@ namespace esphome {
             return 8.5 * pow(2, sf) / bw + 0.2 + 0.4 + 7;
         }
 
+        //////////////////////////////////////////////////////////////////////
+        std::vector<uint8_t> default_psk() {
+            return {0x01};  // "AQ==" decoded
+        }
+
+        std::vector<uint8_t> derive_key(const std::string& channel_name,
+                                        const std::vector<uint8_t>& psk) {
+            std::string input = channel_name + std::string(psk.begin(), psk.end());
+            uint8_t hash[32];
+            mbedtls_sha256((const unsigned char*)input.data(), input.size(), hash, 0);
+            // 0 = SHA-256, not SHA-224
+
+            return std::vector<uint8_t>(hash, hash + 32);
+        }
+
+        std::vector<uint8_t> aes_ctr_decrypt(const std::vector<uint8_t>& ciphertext,
+                                             const std::vector<uint8_t>& key,
+                                             const std::vector<uint8_t>& iv  // 16 bytes
+                                             ) {
+            mbedtls_aes_context aes;
+            mbedtls_aes_init(&aes);
+            mbedtls_aes_setkey_dec(&aes, key.data(), 256);
+
+            std::vector<uint8_t> output(ciphertext.size());
+            size_t nc_off = 0;
+            unsigned char stream_block[16] = {0};
+
+            mbedtls_aes_crypt_ctr(&aes,
+                                  ciphertext.size(),
+                                  &nc_off,
+                                  (unsigned char*)iv.data(),
+                                  stream_block,
+                                  ciphertext.data(),
+                                  output.data());
+
+            mbedtls_aes_free(&aes);
+            return output;
+        }
+
+        void decrypt_meshtastic_packet(const std::vector<uint8_t>& raw_packet) {
+            if (raw_packet.size() < 16) {
+                printf("Invalid packet (too short)\n");
+                return;
+            }
+
+            std::string channel_name = "LongFast";
+            std::vector<uint8_t> psk = default_psk();
+            std::vector<uint8_t> key = derive_key(channel_name, psk);
+
+            std::vector<uint8_t> nonce(raw_packet.begin(), raw_packet.begin() + 16);
+            std::vector<uint8_t> ciphertext(raw_packet.begin() + 16, raw_packet.end());
+
+            std::vector<uint8_t> decrypted = aes_ctr_decrypt(ciphertext, key, nonce);
+
+            printf("Decrypted message (%zu bytes):\n", decrypted.size());
+            for (auto b : decrypted) {
+                printf("%02X ", b);
+            }
+            printf("\n");
+        }
+        //////////////////////////////////////////////////////////////////////
 
         void printPacket(const char *prefix, const meshtastic_MeshPacket *p) {
             std::string out = "";
@@ -549,7 +616,7 @@ namespace esphome {
                 };
 
                 // uint8_t other_public_key[32] = 0x00;
-                // uint8_t my_public_key[32] 0x00;
+                // uint8_t my_public_key[32]    = 0x00;
 
                 // Calculate the length of the encoded Base64 string
                 // int encodedLength = base64_enc_len(sizeof(key));
@@ -569,7 +636,13 @@ namespace esphome {
                     )
                     ESP_LOGD(TAG, "*** Packet to me! ***");
 
+                //std::vector<uint8_t> received = get_raw_radio_packet();  // however you're reading it
+                //std::vector<uint8_t> received(&radioBuffer, (uint*)&radioBuffer + (uint*)numBytes);
+
+                //decrypt_meshtastic_packet(radioBuffer);
                 // printPacket("PKT", (meshtastic_MeshPacket)byteArr);
+                std::vector<uint8_t> received(radioBuffer.payload, radioBuffer.payload + numBytes);
+                decrypt_meshtastic_packet(received);
 
                 ESP_LOGI(TAG,"Starting to listen (again) ...");
                 state = this->radio_->startReceive();
