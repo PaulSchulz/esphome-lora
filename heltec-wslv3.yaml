@@ -1,12 +1,12 @@
 esphome:
-  name: "heltec-wl32v3"
+  name: "heltec-wslv3"
+  name_add_mac_suffix: true
   libraries:
     - "SPI"
     - "Ticker"
     #- RadioLib=https://github.com/jgromes/RadioLib#5.6.0
     #  Other versions break because of the 'chain+' setting in 'library.json' 
     - RadioLib=https://github.com/PaulSchulz/RadioLib
-
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -20,6 +20,20 @@ logger:
   hardware_uart: UART0
   level: DEBUG
 
+wifi:
+improv_serial:
+esp32_improv:
+  authorizer: none
+api:
+ota:
+  - platform: esphome
+  - platform: web_server
+
+web_server:
+  port: 80
+  version: 3
+  local: true
+
 #############################################################################
 external_components:
   - source:
@@ -28,17 +42,17 @@ external_components:
     components: [lora_radio]
 
 spi:
-  clk_pin: GPIO9
+  clk_pin:  GPIO9
   mosi_pin: GPIO10
   miso_pin: GPIO11
 
 # SPI Device
 lora_radio:
   id: lora_radio_device
-  cs_pin: 8 #GPIO8
+  cs_pin:     8 #GPIO8
   reset_pin: 12 #GPIO12
-  dio1_pin: 14 #GPIO14
-  busy_pin: 13 #GPIO13
+  dio1_pin:  14 #GPIO14
+  busy_pin:  13 #GPIO13
   #framework:
   #  type: meshtastic
   #  region: anz
