@@ -9,10 +9,12 @@ esphome:
     - RadioLib=https://github.com/PaulSchulz/RadioLib
 
 esp32:
-  board: esp32-s3-devkitc-1
+#  board: esp32-s3-devkitc-1
+  board: heltec_wifi_lora_32_V3
   variant: esp32s3
   framework:
     type: arduino
+#    type: esp-idf
 
 #############################################################################    
 # Enable logging

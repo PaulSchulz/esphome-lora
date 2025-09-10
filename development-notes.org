@@ -67,3 +67,86 @@ It would be good to be able to support different messaging types (including
 - MeshCore :: https://meshcore.co.uk
 
 None of these are implemented yet.
+
+* ChatGPT Notes on 'lora_radio.cpp'
+** General Maintainability Observations
+*** 1. File Size and Responsibility
+
+- Your lora_radio.cpp mixes:
+  - Low-level register/SPI interactions
+  - High-level ESPHome integration (loop, logging)
+  - Message framing logic
+
+- Consider splitting responsibilities:
+  - lora_radio_hw.cpp/.h → just SPI and chip-level functions.
+  - lora_radio.cpp/.h → packet management, send/receive.
+  - lora_component.cpp/.h → ESPHome Component glue code (logging, publishing sensors).
+
+This keeps each file under ~300 lines, easier to reason about.
+
+*** 2. Naming Consistency
+
+- Some functions are very generic (send, loop, receive) — it’s not always clear
+  whether they’re chip-level or application-level.
+
+- Suggest prefixing with context:
+  - radio_send_packet() instead of send().
+  - radio_receive_bytes() vs. radio_receive_meshtastic().
+
+- This will help later when you mix decoding Meshtastic with simpler “raw”
+  packets.
+
+*** 3. Logging
+- You’re using ESP_LOGD, which is good.
+- But many messages are terse (e.g. "send failed").
+-  Suggest including contextual values:
+#+begin_src cpp
+ESP_LOGE(TAG, "Send failed, len=%d, last_err=%d", len, radio_err);
+#+end_src
+
+This will help debugging across different radios/networks.
+
+*** 4. Error Handling
+- I see multiple spots where functions just return false; or return; without
+  much feedback.
+
+- For maintainability, always log why — even if only at debug level.
+
+*** 5. Magic Numbers
+- I noticed hardcoded values like 0x12, 255, 0xFFFF.
+
+Define constants or enums at the top of the file:
+#+begin_src cpp
+  constexpr uint16_t MESHTASTIC_SYNCWORD = 0x2B4;
+  constexpr uint8_t MAX_PACKET_SIZE = 255;
+#+end_src
+This avoids future mistakes when someone tweaks values.
+
+*** 6. Meshtastic Packet Decoding
+- At the moment you’re just receiving raw bytes.
+- If you want to decode Meshtastic, you’ll need:
+  - Protobuf decoding of the meshtastic.MeshPacket message.
+  - Channel encryption (AES-CTR + Poly1305 MAC).
+- That’s a big step — but for maintainability:
+  - Encapsulate it in a dedicated meshtastic_codec.cpp/.h.
+  - Keep the radio driver "dumb"" — just delivers raw packets to higher-level
+    decoder.
+
+*** 7. Future-Proofing
+- Consider adding unit test scaffolding (even if not complete yet):
+
+  - Example: feed in a raw Meshtastic packet (captured via Serial debug), check
+    whether your decoder outputs expected fields.
+
+  - This will make it easier when you implement key/channel support.
+
+** Suggested Next Steps
+*** 1. Refactor into 3 layers:
+
+- Hardware driver (SPI + SX126x interaction)
+- Radio wrapper (send/receive packets)
+- Meshtastic codec (decode if channel/key available)
+*** 2. Add constants/enums for magic numbers.
+*** 3. Expand logging so you always know why a function failed.
+*** 4. Start a meshtastic_decoder stub that takes raw bytes and just prints packet type/length. Later, integrate AES + protobuf.
+
