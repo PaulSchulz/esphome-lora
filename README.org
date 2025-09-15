@@ -2,6 +2,17 @@
 
 A Component for ESPHome to implement LoRa Radio Communications
 
+*Note:* This software has been deprecated and no longer recommended for use as
+ESPHome now includes the 'sx126x' and 'packet_transport' components which
+provide the same functional with an arguably better architecture.
+
+This code will be kept in an 'archive' branch (which you are viewing now)
+but will not longer received any additional attention.
+
+If you are using this code, the easiest way forward is to re-implement the
+functionality in a pure esphome YAML file format. Work is currently commencing
+on creating examples of this.
+
 * Introduction :TOC:
 - [[#supported-hardware][Supported Hardware]]
   - [[#heltec-v3-sx1262x][Heltec v3 (SX1262x)]]
